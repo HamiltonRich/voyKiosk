@@ -8,6 +8,9 @@
 # Change wallpaper
 gsettings set org.gnome.desktop.background picture-uri 'file:///home/voyage/desktop/wallpaper.png'
 
+# Hide dock
+gnome-extensions disable ubuntu-dock@ubuntu.com
+
 # Function to run commands with sudo when necessary
 run_command() {
   if sudo -n true 2>/dev/null; then
