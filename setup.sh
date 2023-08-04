@@ -5,8 +5,10 @@
 # xdotools if needed.
 # It initiates the shutdown if the user clicks "Cancel" or closes the dialog.
 
-# Function to run commands with sudo when necessary
+# Change wallpaper
+gsettings set org.gnome.desktop.background picture-uri 'file:///home/voyage/desktop/wallpaper.png'
 
+# Function to run commands with sudo when necessary
 run_command() {
   if sudo -n true 2>/dev/null; then
     # No password prompt needed, can run the command with sudo directly
@@ -34,7 +36,7 @@ else
 fi
 
 #make autostart directory if not already in place
-dir="/home/rich/.config/autostart"
+dir="/home/voyage/.config/autostart"
 
 if [ ! -d $dir ]; then
     zenity --info --text="Creating directory: $dir" --width=500
