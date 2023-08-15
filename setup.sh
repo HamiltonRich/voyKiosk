@@ -6,10 +6,16 @@
 # It initiates the shutdown if the user clicks "Cancel" or closes the dialog.
 
 # Change wallpaper
-gsettings set org.gnome.desktop.background picture-uri 'file:///home/voyage/desktop/wallpaper.png'
+zenity --info --text="Changing wallpaper: $dir" --width=500
+gsettings set org.gnome.desktop.background picture-uri '/path/to/Desktop/photo.jpg'
 
 # Hide dock
+zenity --info --text="Disabling dock: $dir" --width=500
 gnome-extensions disable ubuntu-dock@ubuntu.com
+
+# Disable meta key
+gsettings set org.gnome.mutter overlay-key 'disabled'
+zenity --info --text="Meta key disabled" --width=500
 
 # Function to run commands with sudo when necessary
 run_command() {
@@ -21,7 +27,7 @@ run_command() {
     password=$(zenity --password --title="Enter the password for sudo" --width=500)
     # Check if the user canceled the password entry
     if [[ $? -ne 0 ]]; then
-      zenity --error --text="Password entry canceled. Exiting..."
+      zenity --error --text="Password entry cancelled. Exiting..."
       exit 1
     fi
     # Execute the command with sudo using the password provided by the user
@@ -48,10 +54,6 @@ else
     zenity --info--text="Directory already exists: $dir" --width=500
 fi
 
-# Disable meta key
-gsettings set org.gnome.mutter overlay-key 'disabled'
-zenity --info --text="Meta key disabled" --width=500
-
 # Contents of the .desktop file
 desktop_file_content="[Desktop Entry]
 Type=Application
@@ -67,5 +69,20 @@ Comment="
 autostart_dir="$HOME/.config/autostart"
 echo "$desktop_file_content" > "$autostart_dir/kiosk.desktop"
 chmod +x "$autostart_dir/kiosk.desktop"
+
+
+# Prompt for SSID and password using zenity
+SSID=$(zenity --entry --title="Enter SSID" --text="Enter the SSID of the Wi-Fi network:")
+PASSWORD=$(zenity --password --title="Enter Password" --text="Enter the password for the Wi-Fi network:")
+
+# Create a new Wi-Fi connection
+nmcli connection add type wifi con-name "WiFi" ifname "*" ssid "$SSID" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PASSWORD"
+
+# Set the connection to auto-connect
+nmcli connection modify "WiFi" connection.autoconnect yes
+
+# Display the configured connection
+nmcli connection show "WiFi"
+
 
 zenity --info --text="Setup complete" --width=500
