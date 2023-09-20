@@ -15,7 +15,7 @@ y=$((($screen_height - $dialog_height) / 2))
 if zenity --question --title="Notification" --text="$message" --width=$dialog_width --height=$dialog_height --ok-label="OK" --cancel-label="Cancel"; then
     # OK button was clicked
     # Start Firefox in kiosk mode using private window as no cache
-    firefox --kiosk --private-window voyagecare.com
+    firefox --kiosk --private-window learningpool.voyagecare.com
 else
     # Cancel button was clicked or the dial'disabled'og was closed
     zenity --info --text= "Notification" "Cancel button pressed. Initiating shutdown..." --width=500
