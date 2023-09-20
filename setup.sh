@@ -1,21 +1,9 @@
 #!/bin/bash
 
-# Rich H script to deploy kiosk mode to a linux install
+# Rich H script to deploy kiosk mode to a Linux install
 # The setup script sets the kiosk script in the autostart folder and installs
 # xdotools if needed.
 # It initiates the shutdown if the user clicks "Cancel" or closes the dialog.
-
-# Change wallpaper
-zenity --info --text="Changing wallpaper: $dir" --width=500
-gsettings set org.gnome.desktop.background picture-uri '/path/to/Desktop/photo.jpg'
-
-# Hide dock
-zenity --info --text="Disabling dock: $dir" --width=500
-gnome-extensions disable ubuntu-dock@ubuntu.com
-
-# Disable meta key
-gsettings set org.gnome.mutter overlay-key 'disabled'
-zenity --info --text="Meta key disabled" --width=500
 
 # Function to run commands with sudo when necessary
 run_command() {
@@ -35,54 +23,81 @@ run_command() {
   fi
 }
 
-# Check if xdotool is installed
-if ! command -v xdotool ; then
-    echo "Error: xdotool not found. Installing now."
-    run_command sudo apt install xdotool
-    zenity --info --text="xdotool is installed."  --width=500 
-else
-    zenity --info --text="xdotool is installed." --width=500
-fi
+# Function to run a command with a progress bar
+run_command_with_progress() {
+  # Display a progress dialog while running the command
+  (
+    echo "10"
+    sleep 1
+    echo "20"
+    sleep 1
+    echo "30"
+    sleep 1
+    echo "40"
+    sleep 1
+    echo "50"
+    sleep 1
+    echo "60"
+    sleep 1
+    echo "70"
+    sleep 1
+    echo "80"
+    sleep 1
+    echo "90"
+    sleep 1
+    echo "100"
+  ) | zenity --progress --title="Running Command" --text="Please wait..." --auto-close --pulsate --width=500
 
-#make autostart directory if not already in place
-dir="/home/voyage/.config/autostart"
+  # Run the command
+  "$@"
 
-if [ ! -d $dir ]; then
-    zenity --info --text="Creating directory: $dir" --width=500
+  # Close the progress dialog
+  sleep 1
+  echo "100" | zenity --progress --title="Running Command" --text="Please wait..." --auto-close --width=500
+}
+
+# Display a progress dialog while the script is running
+(
+  # Change wallpaper
+  run_command_with_progress gsettings set org.gnome.desktop.background picture-uri '/home/voyage/Desktop/voyKiosk/wallpaper.jpg'
+
+  # Hide dock
+  run_command_with_progress gnome-extensions disable ubuntu-dock@ubuntu.com
+
+  # Disable meta key
+  run_command_with_progress gsettings set org.gnome.mutter overlay-key 'disabled'
+
+  # Disable overview on start
+  run_command_with_progress gsettings set org.gnome.shell.extensions.dash-to-dock show-show-apps-at-top false
+
+  # Check if xdotool is installed
+  if ! command -v xdotool ; then
+    run_command_with_progress sudo apt install xdotool
+  fi
+
+  # Create the autostart directory if not already in place
+  dir="$HOME/.config/autostart"
+  if [ ! -d $dir ]; then
     mkdir -p $dir
-else
-    zenity --info--text="Directory already exists: $dir" --width=500
-fi
+  fi
 
-# Contents of the .desktop file
-desktop_file_content="[Desktop Entry]
-Type=Application
-Exec=$HOME/Desktop/kiosk.sh
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-Name[en_US]=kiosk
-Name=kiosk
-Comment[en_US]=
-Comment="
+  # Contents of the .desktop file
+  desktop_file_content="[Desktop Entry]
+  Type=Application
+  Exec=$HOME/Desktop/kiosk.sh
+  Hidden=false
+  NoDisplay=false
+  X-GNOME-Autostart-enabled=true
+  Name[en_US]=kiosk
+  Name=kiosk
+  Comment[en_US]=
+  Comment="
 
-autostart_dir="$HOME/.config/autostart"
-echo "$desktop_file_content" > "$autostart_dir/kiosk.desktop"
-chmod +x "$autostart_dir/kiosk.desktop"
+  autostart_dir="$HOME/.config/autostart"
+  echo "$desktop_file_content" > "$autostart_dir/kiosk.sh.desktop"
+  chmod +x "$autostart_dir/kiosk.sh.desktop"
 
-
-# Prompt for SSID and password using zenity
-SSID=$(zenity --entry --title="Enter SSID" --text="Enter the SSID of the Wi-Fi network:")
-PASSWORD=$(zenity --password --title="Enter Password" --text="Enter the password for the Wi-Fi network:")
-
-# Create a new Wi-Fi connection
-nmcli connection add type wifi con-name "WiFi" ifname "*" ssid "$SSID" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PASSWORD"
-
-# Set the connection to auto-connect
-nmcli connection modify "WiFi" connection.autoconnect yes
-
-# Display the configured connection
-nmcli connection show "WiFi"
-
+  
+) | zenity --progress --title="Running Script" --text="Please wait..." --auto-close --pulsate --width=500
 
 zenity --info --text="Setup complete" --width=500
